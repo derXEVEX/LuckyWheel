@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Wheel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            color: #fff;
+        }
+
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(120, 40, 200, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 70%, rgba(30, 144, 255, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(255, 20, 147, 0.1) 0%, transparent 50%);
+            animation: bgPulse 15s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .stars {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+        }
+
+        .shape1 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            top: -10%;
+            left: -10%;
+            animation: float1 25s infinite ease-in-out;
+        }
+
+        .shape2 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            bottom: -10%;
+            right: -10%;
+            animation: float2 20s infinite ease-in-out;
+        }
+
+        .shape3 {
+            width: 350px;
+            height: 350px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            top: 50%;
+            left: 50%;
+            animation: float3 30s infinite ease-in-out;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(100px, -100px) rotate(120deg); }
+            66% { transform: translate(-50px, 100px) rotate(240deg); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(-100px, -80px) rotate(-120deg); }
+            66% { transform: translate(80px, 80px) rotate(-240deg); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                    linear-gradient(rgba(102, 126, 234, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridFlow 30s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes gridFlow {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 95%;
+            max-width: 1400px;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            margin-bottom: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            filter: drop-shadow(0 0 30px rgba(102, 126, 234, 0.3));
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 30px rgba(102, 126, 234, 0.3)); }
+            50% { filter: drop-shadow(0 0 50px rgba(102, 126, 234, 0.6)); }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(15, 15, 25, 0.6);
+            backdrop-filter: blur(30px);
+            border-radius: 30px;
+            padding: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.05),
+            transparent);
+            animation: shimmer 8s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        .panel:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15),
+            0 0 40px rgba(102, 126, 234, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto;
+            aspect-ratio: 1;
+        }
+
+        .wheel-outer-ring {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            border-radius: 50%;
+            background: conic-gradient(
+                    from 0deg,
+                    #667eea,
+                    #764ba2,
+                    #f093fb,
+                    #f5576c,
+                    #667eea
+            );
+            animation: ringRotate 10s linear infinite;
+            opacity: 0.3;
+            filter: blur(10px);
+        }
+
+        @keyframes ringRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.7));
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 60px solid #fff;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
+            z-index: 10;
+            animation: pointerFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes pointerFloat {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+        }
+
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #fff, #e0e0e0);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.8),
+            0 0 60px rgba(102, 126, 234, 0.4);
+            animation: pointerGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pointerGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 60px rgba(102, 126, 234, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(102, 126, 234, 0.6); }
+        }
+
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(102, 126, 234, 0.6),
+            inset 0 2px 15px rgba(255, 255, 255, 0.3),
+            0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 4px solid rgba(255, 255, 255, 0.9);
+            z-index: 5;
+            animation: centerPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes centerPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.08); }
+        }
+
+        .center-circle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background-image: url('img2.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) rotate(0deg); }
+            50% { opacity: 1; transform: translate(-50%, -50%) rotate(180deg); }
+        }
+
+        .result-emoji {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            animation: emojiPop 0.6s ease-out;
+        }
+
+        @keyframes emojiPop {
+            0% { transform: scale(0) rotate(-180deg); }
+            70% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .spin-button {
+            display: block;
+            margin: 40px auto 0;
+            padding: 22px 60px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .spin-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .spin-button:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .spin-button:active {
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spin-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .input-section h2 {
+            color: #fff;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #optionsInput {
+            width: 100%;
+            min-height: 350px;
+            padding: 25px;
+            font-size: 1.1rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            background: rgba(10, 10, 20, 0.8);
+            color: #fff;
+            resize: vertical;
+            transition: all 0.3s ease;
+            line-height: 1.8;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #optionsInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15),
+            inset 0 2px 10px rgba(0, 0, 0, 0.5);
+            background: rgba(10, 10, 20, 0.95);
+        }
+
+        #optionsInput::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .hint {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 3px solid rgba(102, 126, 234, 0.5);
+        }
+
+        .hint::before {
+            content: '⚡';
+            font-size: 1.2rem;
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(15, 15, 25, 0.98);
+            backdrop-filter: blur(30px);
+            padding: 70px 60px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            text-align: center;
+            max-width: 90%;
+            min-width: 350px;
+        }
+
+        .result-modal.show {
+            display: block;
+            animation: modalBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes modalBounce {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5) rotate(-5deg);
+                opacity: 0;
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1.05) rotate(2deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .result-modal h2 {
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: resultShine 1s ease-in-out;
+        }
+
+        @keyframes resultShine {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .result-modal p {
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 35px;
+            font-weight: 700;
+            padding: 25px 30px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            animation: resultPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes resultPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .close-modal {
+            padding: 18px 45px;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .close-modal:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .panel {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                margin-bottom: 30px;
+            }
+
+            .spin-button {
+                padding: 18px 45px;
+                font-size: 1.2rem;
+            }
+
+            .result-modal {
+                padding: 50px 35px;
+            }
+
+            .result-modal h2 {
+                font-size: 2rem;
+            }
+
+            .result-modal p {
+                font-size: 1.6rem;
+            }
+
+            .wheel-container {
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-animated"></div>
+<div class="stars" id="stars"></div>
+<div class="floating-shapes">
+    <div class="shape shape1"></div>
+    <div class="shape shape2"></div>
+    <div class="shape shape3"></div>
+</div>
+<div class="grid-overlay"></div>
+
+<div class="container">
+    <h1>Lucky Wheel</h1>
+
+    <div class="main-content">
+        <div class="panel wheel-section">
+            <div class="wheel-container">
+                <div class="wheel-outer-ring"></div>
+                <div class="pointer"></div>
+                <div class="wheel-wrapper">
+                    <canvas id="wheelCanvas"></canvas>
+                    <div class="center-circle"></div>
+                </div>
+            </div>
+            <button class="spin-button" id="spinButton"><span>Spin the Wheel</span></button>
+        </div>
+
+        <div class="panel input-section">
+            <h2>Options</h2>
+            <div class="input-group">
+                <label>Enter Options (one per line)</label>
+                <textarea id="optionsInput" placeholder="Pizza&#10;Burger&#10;Sushi&#10;Pasta&#10;Tacos">Option 1
+Option 2
+Option 3</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="result-modal" id="resultModal">
+    <img src="img1.png" class="result-emoji" alt="Winner">
+    <h2>Winner</h2>
+    <p id="resultText"></p>
+    <button class="close-modal" id="closeModal">Continue</button>
+</div>
+
+<script>
+    function createStars() {
+        const container = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            container.appendChild(star);
+        }
+    }
+    createStars();
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinButton = document.getElementById('spinButton');
+    const optionsInput = document.getElementById('optionsInput');
+    const resultModal = document.getElementById('resultModal');
+    const resultText = document.getElementById('resultText');
+    const closeModal = document.getElementById('closeModal');
+    const overlay = document.getElementById('overlay');
+
+    let options = ['Option 1', 'Option 2', 'Option 3'];
+    let currentRotation = 0;
+    let isSpinning = false;
+    let segmentColors = [];
+
+    function generateColorPalette(count) {
+        const colors = [];
+        const baseHue = Math.random() * 360;
+
+        for (let i = 0; i < count; i++) {
+            const hue = (baseHue + (360 / count) * i + Math.random() * 40 - 20) % 360;
+            const saturation = 65 + Math.random() * 25;
+            const lightness = 50 + Math.random() * 15;
+            colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+        }
+
+        return colors.sort(() => Math.random() - 0.5);
+    }
+
+    function resizeCanvas() {
+        const container = canvas.parentElement;
+        const size = Math.min(container.offsetWidth, container.offsetHeight);
+        if (size > 20) {
+            canvas.width = size;
+            canvas.height = size;
+            drawWheel();
+        }
+    }
+
+    function drawWheel() {
+        if (canvas.width <= 0 || canvas.height <= 0) return;
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.max(10, Math.min(centerX, centerY) - 10);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (options.length === 0) return;
+
+        const anglePerOption = (2 * Math.PI) / options.length;
+
+        options.forEach((option, index) => {
+            const startAngle = index * anglePerOption + currentRotation;
+            const endAngle = startAngle + anglePerOption;
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, segmentColors[index]);
+            gradient.addColorStop(1, adjustBrightness(segmentColors[index], -30));
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius * 0.95, startAngle, endAngle);
+            ctx.closePath();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(startAngle + anglePerOption / 2);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${Math.max(16, radius / 10)}px -apple-system, sans-serif`;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 8;
+
+            const maxWidth = radius * 0.5;
+            const text = option.length > 20 ? option.substring(0, 17) + '...' : option;
+            ctx.fillText(text, radius * 0.65, 6);
+
+            ctx.restore();
+        });
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * (0.3 + i * 0.15), 0, 2 * Math.PI);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 - i * 0.01})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    }
+
+    function adjustBrightness(hsl, percent) {
+        const match = hsl.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+        if (!match) return hsl;
+
+        const h = match[1];
+        const s = match[2];
+        let l = parseInt(match[3]);
+
+        l = Math.max(0, Math.min(100, l + percent));
+
+        return `hsl(${h}, ${s}%, ${l}%)`;
+    }
+
+    function spinWheel() {
+        if (isSpinning || options.length < 2) return;
+
+        isSpinning = true;
+        spinButton.disabled = true;
+
+        const spins = 6 + Math.random() * 4;
+        const extraDegrees = Math.random() * 360;
+        const totalRotation = spins * 360 + extraDegrees;
+        const duration = 5000 + Math.random() * 1500;
+
+        const startTime = Date.now();
+        const startRotation = currentRotation;
+
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const easeOut = 1 - Math.pow(1 - progress, 3.5);
+
+            currentRotation = startRotation + (totalRotation * Math.PI / 180) * easeOut;
+            drawWheel();
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                currentRotation = currentRotation % (2 * Math.PI);
+                isSpinning = false;
+                spinButton.disabled = false;
+                showResult();
+            }
+        }
+
+        animate();
+    }
+
+    function showResult() {
+
+        const anglePerOption = (2 * Math.PI) / options.length;
+
+        let normalizedRotation = currentRotation % (2 * Math.PI);
+        if (normalizedRotation < 0) normalizedRotation += 2 * Math.PI;
+
+
+        const pointerAngle = -Math.PI / 2;
+
+        let angleUnderPointer = pointerAngle - normalizedRotation;
+
+        angleUnderPointer = angleUnderPointer % (2 * Math.PI);
+        if (angleUnderPointer < 0) angleUnderPointer += 2 * Math.PI;
+
+        const winningIndex = Math.floor(angleUnderPointer / anglePerOption) % options.length;
+        const winner = options[winningIndex];
+
+        createConfetti();
+
+        setTimeout(() => {
+            resultText.textContent = winner;
+            resultModal.classList.add('show');
+            overlay.classList.add('show');
+        }, 600);
+    }
+
+    function createConfetti() {
+        const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#feca57', '#ff6b9d', '#48dbfb', '#ee5a6f'];
+
+        for (let i = 0; i < 200; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-30px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                const shapes = ['50%', '0%'];
+                confetti.style.borderRadius = shapes[Math.floor(Math.random() * shapes.length)];
+
+                const size = 8 + Math.random() * 8;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+
+                document.body.appendChild(confetti);
+
+                const xMovement = (Math.random() - 0.5) * 300;
+                const yMovement = Math.random() * window.innerHeight + window.innerHeight * 0.5;
+                const rotation = Math.random() * 1080 - 540;
+                const duration = Math.random() * 1500 + 2500;
+
+                confetti.animate([
+                    {
+                        transform: 'translate(0, 0) rotate(0deg) scale(1)',
+                        opacity: 1
+                    },
+                    {
+                        transform: `translate(${xMovement}px, ${yMovement}px) rotate(${rotation}deg) scale(0.5)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: duration,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }).onfinish = () => confetti.remove();
+            }, i * 10);
+        }
+    }
+
+    function updateOptions() {
+        const input = optionsInput.value.trim();
+        const newOptions = input.split('\n').filter(opt => opt.trim() !== '').map(opt => opt.trim());
+
+        if (newOptions.length < 1) {
+            options = ['Option 1'];
+        } else {
+            options = newOptions;
+        }
+
+        if (options.length !== segmentColors.length) {
+            segmentColors = generateColorPalette(options.length);
+        }
+
+        drawWheel();
+    }
+
+    let updateTimeout;
+    optionsInput.addEventListener('input', () => {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(updateOptions, 250);
+    });
+
+    closeModal.addEventListener('click', () => {
+        resultModal.classList.remove('show');
+        overlay.classList.remove('show');
+    });
+
+    overlay.addEventListener('click', () => {
+        resultModal.classList.remove('show');
+        overlay.classList.remove('show');
+    });
+
+    spinButton.addEventListener('click', spinWheel);
+
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+    });
+
+    segmentColors = generateColorPalette(options.length);
+    resizeCanvas();
+    updateOptions();
+
+    const observer = new ResizeObserver(() => {
+        resizeCanvas();
+    });
+    observer.observe(canvas.parentElement);
+</script>
+</body>
+</html>
